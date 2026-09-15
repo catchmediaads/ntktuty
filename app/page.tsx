@@ -148,19 +148,20 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     return;
   }
 
-  const { error: databaseError } = await supabase
-    .from("complaints")
-    .insert({
-      name: form.name.trim(),
-      mobile: form.mobile,
-      district: form.district,
-      constituency: form.constituency,
-      area: form.area.trim(),
-      street: form.street.trim(),
-      category: form.category,
-      description: form.description.trim(),
-      attachment_name: fileName || null,
-    });
+  const { error: databaseError } = await supabase.rpc(
+    "submit_complaint",
+    {
+      p_name: form.name.trim(),
+      p_mobile: form.mobile,
+      p_district: form.district,
+      p_constituency: form.constituency,
+      p_area: form.area.trim(),
+      p_street: form.street.trim(),
+      p_category: form.category,
+      p_description: form.description.trim(),
+      p_attachment_name: fileName || null,
+    }
+  )
    
   if (databaseError) {
     console.error("Complaint submission error:", databaseError);
@@ -169,13 +170,19 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     );
     return;
   }
-
+  const submittedComplaint = data?.[0];
+  
+  if (!submittedComplaint) 
+  {
+    setError("Complaint ID பெற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.");
+    return;
+  }
   const newComplaint: Complaint = {
     ...form,
     description: form.description.trim(),
     fileName,
-    complaintId: "புகார் பதிவு செய்யப்பட்டது",
-    date: new Date().toLocaleDateString("ta-IN"),
+    complaintId: submittedComplaint.complaint_id,
+    date: new Date(submittedComplaint.created_at).toLocaleDateString ("ta-IN"),
   };
 
   setComplaint(newComplaint);
