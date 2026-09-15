@@ -174,8 +174,8 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     ...form,
     description: form.description.trim(),
     fileName,
-    complaintId: data.complaint_id,
-    date: new Date(data.created_at).toLocaleDateString("ta-IN"),
+    complaintId: "புகார் பதிவு செய்யப்பட்டது",
+    date: new Date().toLocaleDateString("ta-IN"),
   };
 
   setComplaint(newComplaint);
