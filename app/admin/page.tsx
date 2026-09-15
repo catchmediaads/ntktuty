@@ -20,6 +20,12 @@ type Complaint = {
   status: string;
 };
 
+type PetitionAuthority = {
+  designation: string;
+  department: string;
+  reason: string;
+};
+
 const statusOptions = [
   "Pending",
   "In Progress",
@@ -37,11 +43,233 @@ const constituencyOptions = [
   "கோவில்பட்டி",
 ];
 
+function getPetitionAuthority(
+  complaint: Complaint
+): PetitionAuthority {
+  const text = `
+    ${complaint.category}
+    ${complaint.description}
+    ${complaint.area}
+    ${complaint.street}
+  `.toLowerCase();
+
+  if (
+    text.includes("காவல்") ||
+    text.includes("திருட்டு") ||
+    text.includes("குற்றம்") ||
+    text.includes("மிரட்டல்") ||
+    text.includes("வன்முறை") ||
+    text.includes("police") ||
+    text.includes("crime") ||
+    text.includes("theft")
+  ) {
+    return {
+      designation: "சம்பந்தப்பட்ட காவல் நிலைய ஆய்வாளர்",
+      department: "காவல் துறை",
+      reason:
+        "புகார் காவல் துறை விசாரணை தேவைப்படக்கூடியதாக இருப்பதால்.",
+    };
+  }
+
+  if (
+    text.includes("பட்டா") ||
+    text.includes("சிட்டா") ||
+    text.includes("நிலம்") ||
+    text.includes("ஆக்கிரமிப்பு") ||
+    text.includes("வருவாய்") ||
+    text.includes("patta") ||
+    text.includes("land")
+  ) {
+    return {
+      designation: "சம்பந்தப்பட்ட வட்டாட்சியர்",
+      department: "வருவாய் துறை",
+      reason:
+        "புகார் நிலம் அல்லது வருவாய் நிர்வாகம் தொடர்புடையதாக இருப்பதால்.",
+    };
+  }
+
+  if (
+    text.includes("உணவு") ||
+    text.includes("கெட்டுப்போன") ||
+    text.includes("கலப்படம்") ||
+    text.includes("food") ||
+    text.includes("adulteration")
+  ) {
+    return {
+      designation: "மாவட்ட உணவு பாதுகாப்பு நியமன அலுவலர்",
+      department: "உணவு பாதுகாப்புத் துறை",
+      reason:
+        "புகார் உணவின் தரம் அல்லது உணவு பாதுகாப்பு தொடர்புடையதாக இருப்பதால்.",
+    };
+  }
+
+  if (
+    text.includes("வாகனம்") ||
+    text.includes("ஓட்டுநர்") ||
+    text.includes("உரிமம்") ||
+    text.includes("போக்குவரத்து") ||
+    text.includes("rto") ||
+    text.includes("vehicle") ||
+    text.includes("transport")
+  ) {
+    return {
+      designation: "சம்பந்தப்பட்ட வட்டாரப் போக்குவரத்து அலுவலர்",
+      department: "போக்குவரத்துத் துறை",
+      reason:
+        "புகார் வாகனம் அல்லது போக்குவரத்து நிர்வாகம் தொடர்புடையதாக இருப்பதால்.",
+    };
+  }
+
+  if (
+    text.includes("குப்பை") ||
+    text.includes("சாலை") ||
+    text.includes("தெருவிளக்கு") ||
+    text.includes("கழிவுநீர்") ||
+    text.includes("வடிகால்") ||
+    text.includes("குடிநீர்") ||
+    text.includes("மாநகராட்சி") ||
+    text.includes("corporation")
+  ) {
+    return {
+      designation:
+        "தூத்துக்குடி மாநகராட்சி ஆணையர் / சம்பந்தப்பட்ட பொறியியல் அலுவலர்",
+      department: "தூத்துக்குடி மாநகராட்சி",
+      reason:
+        "புகார் மாநகராட்சி அடிப்படை வசதி அல்லது பொது சுகாதாரம் தொடர்புடையதாக இருப்பதால்.",
+    };
+  }
+
+  return {
+    designation: "மாவட்ட ஆட்சியர்",
+    department: "தூத்துக்குடி மாவட்ட ஆட்சியர் அலுவலகம்",
+    reason:
+      "புகாரின் துறை தெளிவாக அடையாளம் காணப்படாததால், மாவட்ட நிர்வாகத்தின் கவனத்திற்கு அனுப்பப்படுகிறது.",
+  };
+}
+
+function buildPetitionText(complaint: Complaint): string {
+  const authority = getPetitionAuthority(complaint);
+
+  const date = new Date(
+    complaint.created_at
+  ).toLocaleDateString("ta-IN");
+
+  return `பெறுநர்:
+
+${authority.designation}
+${authority.department}
+தூத்துக்குடி மாவட்டம்.
+
+
+மதிப்பிற்குரிய ஐயா / அம்மா,
+
+பொருள்: ${complaint.category} தொடர்பாக உரிய நடவடிக்கை கோரி மனு — சமர்ப்பிப்பு.
+
+மனுதாரர் விவரம்:
+
+பெயர்: ${complaint.name}
+கைபேசி எண்: ${complaint.mobile}
+மாவட்டம்: ${complaint.district}
+சட்டமன்றத் தொகுதி: ${complaint.constituency}
+பகுதி: ${complaint.area}
+தெரு / வார்டு: ${complaint.street}
+
+புகார் ID: ${complaint.complaint_id}
+புகார் பதிவு தேதி: ${date}
+
+புகாரின் விவரம்:
+
+${complaint.description}
+
+மேற்கண்ட புகார் ${authority.department} சார்ந்ததாக இருப்பதாக முதற்கட்டமாகக் கருதப்படுகிறது.
+
+எனவே, மேற்கண்ட புகாரைத் தங்களது அலுவலகம் பரிசீலித்து, சம்பந்தப்பட்ட அலுவலர்களுக்கு உரிய அறிவுறுத்தல் வழங்கி, தேவையான தள ஆய்வு / விசாரணை மேற்கொண்டு, சட்டப்படி உரிய நடவடிக்கை எடுக்குமாறு பணிவுடன் கேட்டுக்கொள்கிறேன்.
+
+மேலும், மேற்கொள்ளப்பட்ட நடவடிக்கை குறித்த தகவலை மனுதாரருக்கு தெரிவிக்குமாறும் கேட்டுக்கொள்கிறேன்.
+
+நன்றி.
+
+
+இப்படிக்கு,
+
+${complaint.name}
+கைபேசி எண்: ${complaint.mobile}
+
+இடம்: ${complaint.area}
+தேதி: ${date}
+
+
+இணைப்பு:
+1. புகார் விவரங்கள்
+2. தொடர்புடைய புகைப்படம் / ஆவணம் — இருப்பின்
+
+குறிப்பு:
+இந்த மனுவின் பெறுநர் மற்றும் துறை விவரங்கள் தானியங்கி முதற்கட்ட வகைப்படுத்தலின் அடிப்படையில் உருவாக்கப்பட்டவை. அனுப்புவதற்கு முன் உரிய அதிகாரி மற்றும் jurisdiction-ஐ சரிபார்க்கவும்.`;
+}
+
+function printPetition(complaint: Complaint) {
+  const petitionText = buildPetitionText(complaint);
+
+  const printWindow = window.open(
+    "",
+    "_blank",
+    "width=900,height=900"
+  );
+
+  if (!printWindow) {
+    alert(
+      "Print window திறக்கப்படவில்லை. Browser popup permission-ஐ சரிபார்க்கவும்."
+    );
+    return;
+  }
+
+  const safeText = petitionText
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  printWindow.document.write(`
+    <!doctype html>
+    <html lang="ta">
+      <head>
+        <meta charset="UTF-8" />
+        <title>மனு - ${complaint.complaint_id}</title>
+
+        <style>
+          body {
+            font-family: "Noto Sans Tamil", "Latha", Arial, sans-serif;
+            padding: 40px;
+            line-height: 1.9;
+            color: #111827;
+            white-space: pre-wrap;
+            font-size: 16px;
+          }
+
+          @media print {
+            body {
+              padding: 20px;
+            }
+          }
+        </style>
+      </head>
+
+      <body>${safeText}</body>
+    </html>
+  `);
+
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
 
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [selectedComplaint, setSelectedComplaint] =
+    useState<Complaint | null>(null);
+
+  const [petitionComplaint, setPetitionComplaint] =
     useState<Complaint | null>(null);
 
   const [search, setSearch] = useState("");
@@ -122,10 +350,12 @@ export default function AdminDashboard() {
       complaint.complaint_id,
       complaint.name,
       complaint.mobile,
+      complaint.district,
+      complaint.constituency,
       complaint.area,
       complaint.street,
       complaint.category,
-      complaint.constituency,
+      complaint.description,
     ]
       .join(" ")
       .toLowerCase();
@@ -149,119 +379,125 @@ export default function AdminDashboard() {
     );
   });
 
-  const totalComplaints = filteredComplaints.length;
+  const totalComplaints = complaints.length;
 
-  const resolvedCount = filteredComplaints.filter(
-    (complaint) => complaint.status === "Resolved"
-  ).length;
-
-  const rejectedCount = filteredComplaints.filter(
-    (complaint) => complaint.status === "Rejected"
-  ).length;
-
-  const inProgressCount = filteredComplaints.filter(
+  const pendingComplaints = complaints.filter(
     (complaint) =>
       complaint.status === "Pending" ||
       complaint.status === "In Progress"
   ).length;
 
+  const resolvedComplaints = complaints.filter(
+    (complaint) => complaint.status === "Resolved"
+  ).length;
+
+  const rejectedComplaints = complaints.filter(
+    (complaint) => complaint.status === "Rejected"
+  ).length;
+
   return (
-    <main className="min-h-screen bg-[#f8f1e7] text-slate-800">
-      <header className="bg-red-700 px-6 py-5 text-white">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4">
+    <main className="min-h-screen bg-slate-100">
+      <header className="bg-red-700 px-6 py-4 text-white">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-2xl font-bold">
               Complaint Admin Dashboard
             </h1>
 
-            <p className="mt-1 text-sm text-red-100">
+            <p className="text-sm text-red-100">
               Naam Tamilar Katchi — Thoothukudi District
             </p>
           </div>
 
           <button
             onClick={logout}
-            className="rounded-lg bg-white px-5 py-3 font-semibold text-red-700 hover:bg-red-50"
+            className="rounded-lg bg-white px-4 py-2 font-semibold text-red-700 hover:bg-red-50"
           >
             Logout
           </button>
         </div>
       </header>
 
-      <section className="mx-auto max-w-[1600px] p-5">
-        {/* Constituency filters */}
-        <div className="mb-5 flex flex-wrap gap-3">
-          {constituencyOptions.map((constituency) => (
-            <button
-              key={constituency}
-              onClick={() =>
-                setConstituencyFilter(constituency)
-              }
-              className={`rounded-full border px-5 py-3 font-semibold transition ${
-                constituencyFilter === constituency
-                  ? "border-red-700 bg-red-700 text-white"
-                  : "border-[#dfcdb6] bg-white text-slate-700 hover:bg-red-50"
-              }`}
-            >
-              {constituency}
-            </button>
-          ))}
-        </div>
-
-        {/* Summary cards */}
-        <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border-2 border-green-700 bg-white p-5 text-center shadow-sm">
-            <p className="text-4xl font-bold text-green-700">
-              {resolvedCount}
+      <section className="mx-auto max-w-7xl p-6">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-slate-500">
+              Total Complaints
             </p>
-            <p className="mt-2 text-lg">✅ முடித்தவை</p>
-          </div>
 
-          <div className="rounded-2xl border-2 border-red-600 bg-white p-5 text-center shadow-sm">
-            <p className="text-4xl font-bold text-red-600">
-              {rejectedCount}
-            </p>
-            <p className="mt-2 text-lg">❌ நிராகரிக்கப்பட்டவை</p>
-          </div>
-
-          <div className="rounded-2xl border-2 border-blue-700 bg-white p-5 text-center shadow-sm">
-            <p className="text-4xl font-bold text-blue-700">
-              {inProgressCount}
-            </p>
-            <p className="mt-2 text-lg">
-              ⏳ நடவடிக்கையில் உள்ள
-            </p>
-          </div>
-
-          <div className="rounded-2xl border-2 border-[#dfcdb6] bg-white p-5 text-center shadow-sm">
-            <p className="text-4xl font-bold text-slate-900">
+            <p className="text-3xl font-bold text-slate-800">
               {totalComplaints}
             </p>
-            <p className="mt-2 text-lg">📋 மொத்த பதிவுகள்</p>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-slate-500">
+              Pending / In Progress
+            </p>
+
+            <p className="text-3xl font-bold text-orange-600">
+              {pendingComplaints}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-slate-500">
+              Resolved
+            </p>
+
+            <p className="text-3xl font-bold text-green-600">
+              {resolvedComplaints}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-slate-500">
+              Rejected
+            </p>
+
+            <p className="text-3xl font-bold text-red-600">
+              {rejectedComplaints}
+            </p>
           </div>
         </div>
 
-        {/* Search and status filter */}
-        <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="mb-6 rounded-xl bg-white p-4 shadow">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <input
               type="text"
               value={search}
               onChange={(event) =>
                 setSearch(event.target.value)
               }
-              placeholder="🔎 பதிவு எண் / பெயர் / செல் மூலம் தேடுக..."
-              className="rounded-xl border border-[#dfcdb6] bg-[#fffaf2] px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Search complaint ID, name, mobile, area..."
+              className="rounded-lg border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
             />
+
+            <select
+              value={constituencyFilter}
+              onChange={(event) =>
+                setConstituencyFilter(event.target.value)
+              }
+              className="rounded-lg border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+            >
+              {constituencyOptions.map((constituency) => (
+                <option
+                  key={constituency}
+                  value={constituency}
+                >
+                  {constituency}
+                </option>
+              ))}
+            </select>
 
             <select
               value={statusFilter}
               onChange={(event) =>
                 setStatusFilter(event.target.value)
               }
-              className="rounded-xl border border-[#dfcdb6] bg-[#fffaf2] px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+              className="rounded-lg border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
             >
-              <option value="All">அனைத்து நிலைகள்</option>
+              <option value="All">All Statuses</option>
 
               {statusOptions.map((status) => (
                 <option key={status} value={status}>
@@ -273,8 +509,8 @@ export default function AdminDashboard() {
         </div>
 
         {loading && (
-          <p className="py-10 text-center text-slate-600">
-            புகார்கள் ஏற்றப்படுகின்றன...
+          <p className="text-center text-slate-600">
+            Loading complaints...
           </p>
         )}
 
@@ -285,52 +521,75 @@ export default function AdminDashboard() {
         )}
 
         {!loading && !error && (
-          <div className="overflow-x-auto rounded-2xl bg-white shadow-sm">
-            <table className="min-w-[1100px] w-full text-left text-sm">
+          <div className="overflow-x-auto rounded-xl bg-white shadow">
+            <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-200 text-slate-700">
                 <tr>
-                  <th className="px-4 py-4">#</th>
-                  <th className="px-4 py-4">பதிவு எண்</th>
-                  <th className="px-4 py-4">பெயர்</th>
-                  <th className="px-4 py-4">செல்</th>
-                  <th className="px-4 py-4">தொகுதி</th>
-                  <th className="px-4 py-4">வகை</th>
-                  <th className="px-4 py-4">நிலை</th>
-                  <th className="px-4 py-4">செயல்கள்</th>
+                  <th className="px-4 py-3">
+                    Complaint ID
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Name
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Mobile
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Constituency
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Area
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Category
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Status
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Action
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
-                {filteredComplaints.map((complaint, index) => (
+                {filteredComplaints.map((complaint) => (
                   <tr
                     key={complaint.id}
-                    className="border-t border-[#eadbc8] hover:bg-[#fffaf2]"
+                    className="border-t border-slate-200"
                   >
-                    <td className="px-4 py-4">
-                      {index + 1}
-                    </td>
-
-                    <td className="px-4 py-4 font-bold">
+                    <td className="px-4 py-3 font-semibold">
                       {complaint.complaint_id}
                     </td>
 
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-3">
                       {complaint.name}
                     </td>
 
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-3">
                       {complaint.mobile}
                     </td>
 
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-3">
                       {complaint.constituency}
                     </td>
 
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-3">
+                      {complaint.area}
+                    </td>
+
+                    <td className="px-4 py-3">
                       {complaint.category}
                     </td>
 
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-3">
                       <select
                         value={complaint.status}
                         onChange={(event) =>
@@ -339,7 +598,7 @@ export default function AdminDashboard() {
                             event.target.value
                           )
                         }
-                        className="rounded-full border border-slate-300 px-3 py-2"
+                        className="rounded-md border border-slate-300 px-2 py-1"
                       >
                         {statusOptions.map((status) => (
                           <option
@@ -352,15 +611,26 @@ export default function AdminDashboard() {
                       </select>
                     </td>
 
-                    <td className="px-4 py-4">
-                      <button
-                        onClick={() =>
-                          setSelectedComplaint(complaint)
-                        }
-                        className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700"
-                      >
-                        View
-                      </button>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() =>
+                            setSelectedComplaint(complaint)
+                          }
+                          className="rounded-md bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+                        >
+                          View
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            setPetitionComplaint(complaint)
+                          }
+                          className="rounded-md bg-yellow-400 px-3 py-2 font-semibold text-slate-900 hover:bg-yellow-300"
+                        >
+                          மனுவாக மாற்று
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -368,26 +638,25 @@ export default function AdminDashboard() {
             </table>
 
             {filteredComplaints.length === 0 && (
-              <p className="p-8 text-center text-slate-500">
-                புகார்கள் எதுவும் இல்லை.
+              <p className="p-6 text-center text-slate-500">
+                No complaints found.
               </p>
             )}
           </div>
         )}
       </section>
 
-      {/* Complaint details modal */}
       {selectedComplaint && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <section className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6">
             <div className="mb-5 flex items-center justify-between gap-4">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-bold text-slate-800">
                 Complaint Details
               </h2>
 
               <button
                 onClick={() => setSelectedComplaint(null)}
-                className="text-3xl text-slate-500 hover:text-slate-800"
+                className="text-2xl text-slate-500 hover:text-slate-800"
                 aria-label="Close"
               >
                 ×
@@ -404,7 +673,7 @@ export default function AdminDashboard() {
                 <strong>Date:</strong>{" "}
                 {new Date(
                   selectedComplaint.created_at
-                ).toLocaleString("en-IN")}
+                ).toLocaleString()}
               </p>
 
               <p>
@@ -457,6 +726,112 @@ export default function AdminDashboard() {
             >
               Close
             </button>
+          </section>
+        </div>
+      )}
+
+      {petitionComplaint && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <section className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  மனு Preview
+                </h2>
+
+                <p className="text-sm text-slate-500">
+                  {petitionComplaint.complaint_id}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setPetitionComplaint(null)}
+                className="text-2xl text-slate-500 hover:text-slate-900"
+                aria-label="Close petition preview"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mb-5 rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800">
+              <strong>முக்கியம்:</strong>{" "}
+              இது தானியங்கி முறையில் உருவாக்கப்பட்ட முதற்கட்ட மனு.
+              அனுப்புவதற்கு முன் சம்பந்தப்பட்ட அதிகாரி மற்றும்
+              jurisdiction-ஐ Admin சரிபார்க்க வேண்டும்.
+            </div>
+
+            <div className="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-5">
+              <p className="mb-2 font-semibold text-slate-700">
+                பரிந்துரைக்கப்பட்ட பெறுநர்
+              </p>
+
+              <p className="text-lg font-bold text-red-700">
+                {
+                  getPetitionAuthority(
+                    petitionComplaint
+                  ).designation
+                }
+              </p>
+
+              <p className="text-sm text-slate-600">
+                {
+                  getPetitionAuthority(
+                    petitionComplaint
+                  ).department
+                }
+              </p>
+
+              <p className="mt-2 text-sm text-slate-600">
+                காரணம்:{" "}
+                {
+                  getPetitionAuthority(
+                    petitionComplaint
+                  ).reason
+                }
+              </p>
+            </div>
+
+            <pre className="whitespace-pre-wrap rounded-xl bg-white p-5 text-sm leading-8 text-slate-800 shadow-inner ring-1 ring-slate-200">
+              {buildPetitionText(petitionComplaint)}
+            </pre>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                onClick={() =>
+                  printPetition(petitionComplaint)
+                }
+                className="rounded-lg bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700"
+              >
+                Print / PDF
+              </button>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard
+                    .writeText(
+                      buildPetitionText(petitionComplaint)
+                    )
+                    .then(() => {
+                      alert("மனு Copy செய்யப்பட்டது.");
+                    })
+                    .catch(() => {
+                      alert(
+                        "Copy செய்ய முடியவில்லை. மனுவை manually select செய்து copy செய்யவும்."
+                      );
+                    });
+                }}
+                className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+              >
+                மனுவை Copy செய்
+              </button>
+
+              <button
+                onClick={() => setPetitionComplaint(null)}
+                className="rounded-lg bg-slate-700 px-5 py-3 font-semibold text-white hover:bg-slate-800"
+              >
+                மூடு
+              </button>
+            </div>
           </section>
         </div>
       )}
