@@ -416,6 +416,61 @@ export default function AdminDashboard() {
             Logout
           </button>
         </div>
+        <div className="mx-auto max-w-7xl">
+          {
+            
+<nav className="mt-4 flex flex-wrap gap-2">
+  <a
+    href="/admin"
+    className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-red-700"
+  >
+    Dashboard
+  </a>
+
+  <a
+    href="/admin/news"
+    className="rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-900"
+  >
+    📰 News Management
+  </a>
+
+  <a
+    href="/admin/flash-news"
+    className="rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-900"
+  >
+    🚨 Flash News
+  </a>
+
+  <a
+    href="/admin/breaking-news"
+    className="rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-900"
+  >
+    🔴 Breaking News
+  </a>
+
+  <a
+    href="/admin/homepage"
+    className="rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-900"
+  >
+    🏠 Homepage Editor
+  </a>
+
+  <a
+    href="/admin/media"
+    className="rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-900"
+  >
+    🖼️ Image Manager
+  </a>
+
+  <a
+    href="/admin/events"
+    className="rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-900"
+  >
+    📅 Events
+  </a>
+</nav>
+          }
+        </div>
       </header>
 
       <section className="mx-auto max-w-7xl p-6">
