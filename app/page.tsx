@@ -148,7 +148,7 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     return;
   }
 
-  const { data, error: databaseError } = await supabase
+  const { error: databaseError } = await supabase
     .from("complaints")
     .insert({
       name: form.name.trim(),
@@ -160,10 +160,8 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
       category: form.category,
       description: form.description.trim(),
       attachment_name: fileName || null,
-    })
-    .select("complaint_id, created_at")
-    .single();
-
+    });
+   
   if (databaseError) {
     console.error("Complaint submission error:", databaseError);
     setError(
