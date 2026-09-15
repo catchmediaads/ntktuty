@@ -148,7 +148,7 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     return;
   }
 
-  const { error: databaseError } = await supabase.rpc(
+  const { data, error: databaseError } = await supabase.rpc(
     "submit_complaint",
     {
       p_name: form.name.trim(),
@@ -171,7 +171,6 @@ async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     return;
   }
   const submittedComplaint = data?.[0];
-  
   if (!submittedComplaint) 
   {
     setError("Complaint ID பெற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.");
